@@ -27,8 +27,12 @@ The main Google Sheet contains the following sheets:
    Handles sending email invites to participants based on the schedule.  
 
 3. **Holidays**  
-   - Default holidays are hardcoded based on BCM holidays (falling on Thursdays) and include a 2-week winter break (which don't need to appear on this sheet).  
-   - This sheet is to primarily to add holidays or mark Shawn's absences that are not BCM holidays  
+   - Default holidays are hardcoded based on BCM holidays (falling on Thursdays) and include a 2-week winter break (which don't need to appear on this sheet): 
+     1. first Thursday in Jan
+     2. if July 4 falls on Thursday
+     3. fourth Thursday in November
+     4. last Thursday in December  
+   - This sheet is for labeling  unaccounted for "holidays" or more specifically mark Shawn's absences that are not BCM holidays (may consider relabeling this sheet in the future, since holiday might not be most apt) 
 
 4. **Schedule**  
    - **Autogenerate Schedule**: Automatically creates a schedule based on the inputs.  
