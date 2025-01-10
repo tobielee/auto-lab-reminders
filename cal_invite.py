@@ -51,8 +51,8 @@ def init_services(creds):
         return None, None, None
 
 def create_calendar_event(service, event_data, attendees):
-    event_start = datetime.strptime(f"{event_data['date']} {labmeeting_settings['start_time']}", '%B %d, %Y %H:%M:%S')
-    event_end = datetime.strptime(f"{event_data['date']} {labmeeting_settings['end_time']}", '%B %d, %Y %H:%M:%S')
+    event_start = datetime.strptime(f"{event_data['date']} {labmeeting_settings['start_time']}", '%A %B %d, %Y %H:%M:%S')
+    event_end = datetime.strptime(f"{event_data['date']} {labmeeting_settings['end_time']}", '%A %B %d, %Y %H:%M:%S')
     
     description = f"""
 Hi Lab,
@@ -177,7 +177,8 @@ def main():
     global labmeeting_settings, zoom_extra_text
     labmeeting_settings = config['labmeeting']
     zoom_extra_text = labmeeting_settings['zoomextras']
-    
+    holiday_vocab = labmeeting_settings['holiday_vocab'].split(", ")
+
     creds = get_credentials()
     spreadsheet, calendar, gmail = init_services(creds)
     if not all([spreadsheet, calendar, gmail]):
@@ -193,7 +194,7 @@ def main():
 
     emails = [row['Email'] for row in spreadsheet.worksheet("Emails").get_all_records()]
 
-    if event_data['type'] == 'Holiday' or event_data['type'] == 'Cancel':
+    if event_data['type'] in holiday_vocab:
         print(f"Sending email reminder for {event_data['type']} event on {event_data['date']}")
         send_gmail(
             service=gmail,

@@ -64,6 +64,7 @@ Other fields in config file include:
 - `end_time`: end of meeting
 - `timezone`: timezone for meeting
 - `schedule_envents_count`: number of events (rows) to add to calendar with `generate_schedule.py`
+- `holiday_vocab`: comma separated list of vocab for indicating what is a holiday based on what's given in the Type column of the `Schedule` tab of the Google sheets 
 - `zoomextras`: additional text appended onto calendar invite message/description 
 
 [teams]

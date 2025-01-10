@@ -46,17 +46,19 @@ def get_events(num_events, schedule_df):
 def send_teams(labmeeting_settings, msteam_settings, cal):
     location = labmeeting_settings['room']
     zoom_link = labmeeting_settings['zoom']
+    holiday_vocab = labmeeting_settings['holiday_vocab'].split(", ")
+
     num_events_teams =  msteam_settings['maxevents']
     webhook_name = msteam_settings['webhookname']
     webhook_url = msteam_settings['webhookUrl']
-    
+
     date_sections = []
     first = True
     for date, topic, member in zip(cal['Date'], cal['Type'], cal['Presenter(s)']):
         formatted_date = date.strftime('%Y-%m-%d')
         message_section = pymsteams.cardsection()
-        if pd.isna(member) or topic == "Holiday":
-            text_ = f"<strong>{formatted_date}</strong> <font color='red'>{topic}</font>"
+        if pd.isna(member) or topic in holiday_vocab:
+            text_ = f"<strong>{formatted_date}</strong> <font color='red'>{topic} - {member}</font>"
         else:
             if first:
                 text_ = f"<strong>{formatted_date}</strong> {member} | {topic} (location <strong>{location}</strong> and {zoom_link})"
@@ -90,7 +92,6 @@ def main():
     labmeeting_settings = config['labmeeting']
     msteam_settings = config['teams']
     num_events_teams =  msteam_settings['maxevents']
-
     # Fetch the schedule data from Google Sheets
     spreadsheet = connect_to_google_sheets(labmeeting_settings['googlesheet'], labmeeting_settings['autocreds'])
     schedule_df = pd.DataFrame(spreadsheet.worksheet("Schedule").get_all_records())
