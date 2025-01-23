@@ -34,7 +34,13 @@ The main Google Sheet contains the following sheets:
      4. last Thursday in December  
    - This sheet is for labeling  unaccounted for "holidays" or more specifically mark Shawn's absences that are not BCM holidays (may consider relabeling this sheet in the future, since holiday might not be most apt) 
 
-4. **Schedule**  
+4. **Schedule**
+   
+   - The most important tracking spreadsheet with three columns: Date, Type, Presenter(s). Each row represents an individual event.
+   
+   &nbsp;
+
+   [See Future Features](#futurefeats)
    - **Autogenerate Schedule**: Automatically creates a schedule based on the inputs.  
    - **Autoupdate Schedule**: Updates the schedule dynamically to reflect changes.  
 
@@ -78,13 +84,15 @@ The application includes two Python scripts for execution, which can be run manu
    - Handles sending calendar invites based on the schedule. This will send a email for instances where lab meeting has been canceled due to Shawn's absence or other circumstances.
    - Manual runs of the script get the next proximal event, while including `--auto` flag in a cron job triggers invites only for events a week away (hardcoded).
 
+Helper functions `get_token.py` and `refresh_token.py` should be used to get and retain active token to send email/calendar invite. 
+
 2. **`msteams_remind.py`**  
    - Sends notifications via Microsoft Teams based on the schedule.  
 
 3. (optional) **`generate_schedule.py`** 
    - Populates rows in Schedule sheet of Google sheet based on content from Rotation and Holiday sheets. 
 
-## Future Features  
+## <a name="futurefeats"></a> Future Features  
 
 - **Dynamic/automated Schedule Updating and Absence Handling**:  
   Update schedules and trigger automatic cancellations for absences (e.g., Shawn's absences).  
