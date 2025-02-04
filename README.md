@@ -90,7 +90,7 @@ Helper functions `get_token.py` and `refresh_token.py` should be used to get and
    - Sends notifications via Microsoft Teams based on the schedule.  
 
 3. (optional) **`generate_schedule.py`** 
-   - Populates rows in Schedule sheet of Google sheet based on content from Rotation and Holiday sheets. 
+   - Populates rows in Schedule sheet of Google sheet based on content from Rotation and Holiday sheets. Requires two dates be set in Rotation sheet (one for data and one for JC to initialize the iteration lower max date between the columns serves as the start marker for iteration). 
 
 ## <a name="futurefeats"></a> Future Features  
 
