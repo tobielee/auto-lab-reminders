@@ -4,6 +4,7 @@ import configparser
 import pandas as pd
 import gspread
 from google.oauth2.service_account import Credentials
+import warnings
 
 def is_holiday_thursday(date, holidays_df):
     """Check if given Thursday is a holiday."""
@@ -47,32 +48,42 @@ def generate_schedule(spreadsheet, future_events_limit=16):
     except gspread.exceptions.WorksheetNotFound:
         raise ValueError("Required worksheet not found in the spreadsheet.")
     
+
     # Convert date columns
     rotation_df['Data date'] = pd.to_datetime(rotation_df['Data date'], errors='coerce')
     rotation_df['JC date'] = pd.to_datetime(rotation_df['JC date'], errors='coerce')
-    
-    # Ensure that one of the date columns is valid
-    if rotation_df['Data date'].isna().all() and rotation_df['JC date'].isna().all():
-        raise ValueError("Both 'Data date' and 'JC date' columns are empty or contain invalid dates.")
-    
+
+    # Ensure both date columns have at least one valid date
+    if rotation_df['Data date'].isna().all() or rotation_df['JC date'].isna().all():
+        raise ValueError("Both 'Data date' and 'JC date' must contain at least one valid date; earliest of the two dates starts cycle while the other serves as placeholder for start.")
+
     # Find the most recent date from both columns
     max_data_date = rotation_df['Data date'].max()
     max_jc_date = rotation_df['JC date'].max()
-    
-    # Set up initial state
-    data_index = rotation_df['Data date'].idxmax() if pd.notna(max_data_date) else 0
-    jc_index = rotation_df['JC date'].idxmax() if pd.notna(max_jc_date) else 0
-    start_date = max(max_data_date, max_jc_date)
-    initial_jc = max_jc_date > max_data_date
+
+    # Get indices of the maximum dates
+    data_index = rotation_df['Data date'].idxmax()
+    jc_index = rotation_df['JC date'].idxmax()
+
+    # Check if the difference between max dates is greater than 3 months
+    if max_data_date is not pd.NaT and max_jc_date is not pd.NaT:
+        date_diff = abs((max_data_date - max_jc_date).days)
+        if date_diff > 90:
+            warnings.warn(f"Warning: The maximum dates in 'Data date' and 'JC date' columns are more than 3 months apart ({date_diff} days).")
+
+    start_date = min(max_data_date, max_jc_date)
+    initial_jc = max_jc_date < max_data_date
     data_count = 0
 
-    # Rotation lists
+    # get rotation lists
     rotation_data = rotation_df["Data rotation"].tolist()
     rotation_jc = rotation_df["JC rotation"].tolist()
     
     # Initialize schedule
     schedule = []
     current_date = start_date
+
+    num_jc_presenters = 2 # get two presenters
 
     # Generate schedule
     while len(schedule) < future_events_limit:
@@ -94,7 +105,7 @@ def generate_schedule(spreadsheet, future_events_limit=16):
         # Schedule next presentation
         if initial_jc and data_count == 0:
             # Initial Journal Club presentation
-            presenters = rotation_jc[jc_index:jc_index + 2]
+            presenters = rotation_jc[jc_index:jc_index + num_jc_presenters] 
             schedule.append([
                 current_date.strftime("%Y-%m-%d"),
                 "Journal Club",
@@ -104,7 +115,7 @@ def generate_schedule(spreadsheet, future_events_limit=16):
             for presenter in presenters:
                 rotation_df.loc[rotation_df["JC rotation"] == presenter, "JC date"] = current_date
             
-            jc_index = (jc_index + 2) % len(rotation_jc)
+            jc_index = (jc_index + num_jc_presenters) % len(rotation_jc)
             initial_jc = False
             
         elif data_count < 3:
@@ -122,7 +133,7 @@ def generate_schedule(spreadsheet, future_events_limit=16):
             
         else:
             # Journal Club presentation
-            presenters = rotation_jc[jc_index:jc_index + 2]
+            presenters = rotation_jc[jc_index:jc_index + num_jc_presenters]
             schedule.append([
                 current_date.strftime("%Y-%m-%d"),
                 "Journal Club",
@@ -132,7 +143,7 @@ def generate_schedule(spreadsheet, future_events_limit=16):
             for presenter in presenters:
                 rotation_df.loc[rotation_df["JC rotation"] == presenter, "JC date"] = current_date
             
-            jc_index = (jc_index + 2) % len(rotation_jc)
+            jc_index = (jc_index + num_jc_presenters) % len(rotation_jc)
             data_count = 0
 
         current_date += timedelta(days=7)
