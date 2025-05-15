@@ -7,6 +7,8 @@ import gspread
 
 import pandas as pd
 import pymsteams
+import requests
+import json
 
 # Authenticate and connect to Google Sheets
 def connect_to_google_sheets(sheet_name, autocreds):
@@ -46,7 +48,7 @@ def get_events(num_events, schedule_df):
 def send_teams(labmeeting_settings, msteam_settings, cal):
     location = labmeeting_settings['room']
     zoom_link = labmeeting_settings['zoom']
-    holiday_vocab = labmeeting_settings['holiday_vocab'].split(", ")
+    holiday_vocab = set(labmeeting_settings['holiday_vocab'].split(", "))
 
     num_events_teams =  msteam_settings['maxevents']
     webhook_name = msteam_settings['webhookname']
@@ -62,9 +64,10 @@ def send_teams(labmeeting_settings, msteam_settings, cal):
         else:
             if first:
                 text_ = f"<strong>{formatted_date}</strong> {member} | {topic} (location <strong>{location}</strong> and {zoom_link})"
+                first = False
             else:
                 text_ = f"<strong>{formatted_date}</strong> {member} | {topic}"
-            first = False
+            
         # Set the text for the cardsection
         message_section.text(text_)
         # Add the cardsection object to date_sections
@@ -83,8 +86,23 @@ def send_teams(labmeeting_settings, msteam_settings, cal):
         upcoming_events.addSection(section)
     # # check content before sending
     # upcoming_events.printme()
-    upcoming_events.send()
-    print('Teams Message sent.\n')
+    
+    # Send the message
+    try:
+        payload = upcoming_events.payload
+        response = requests.post(
+            webhook_url,
+            headers={'Content-Type': 'application/json'},
+            data=json.dumps(payload)
+        )
+
+        if response.status_code != 200:
+            print(f"Teams webhook failed: {response.status_code} - {response.text}\n")
+        else:
+            print("Teams message sent successfully.\n")
+
+    except Exception as e:
+        print(f"Error sending Teams message: {e}\n")
 
 def main():
     config = configparser.ConfigParser()
