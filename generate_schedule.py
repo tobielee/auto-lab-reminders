@@ -38,6 +38,11 @@ def is_holiday_thursday(date, holidays_df):
         
     return False, ""
 
+def next_thursday_on_or_after(date):
+    """Return the next Thursday on or after the given date."""
+    days_until_thursday = (3 - date.weekday()) % 7
+    return date + timedelta(days=days_until_thursday)
+
 def generate_schedule(spreadsheet, future_events_limit=16):
     """Generate the lab meeting schedule, alternating between Data and Journal Club presentations."""
     
@@ -88,8 +93,7 @@ def generate_schedule(spreadsheet, future_events_limit=16):
     # Generate schedule
     while len(schedule) < future_events_limit:
         # Move to next Thursday
-        while current_date.weekday() != 3:
-            current_date += timedelta(days=1)
+        current_date = next_thursday_on_or_after(current_date)
             
         # Check for holidays
         is_holiday, holiday_name = is_holiday_thursday(current_date, holidays_df)
@@ -187,7 +191,6 @@ def main():
             "https://www.googleapis.com/auth/drive"
         ]
     )
-    
     client = gspread.authorize(creds)
     try:
         spreadsheet = client.open(labmeeting_settings['googlesheet'])
