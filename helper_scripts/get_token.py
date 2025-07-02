@@ -5,11 +5,11 @@ import configparser
 
 # Load configuration
 config = configparser.ConfigParser()
-config.read('cal_config.cfg')
+config.read('../cal_config.cfg')
 labmeeting_settings = config['labmeeting']
 
 # File paths for credentials and token
-CREDENTIALS_FILE = labmeeting_settings['usercreds']  # Replace with the path to your downloaded client credentials
+CREDENTIALS_FILE = f"../{labmeeting_settings['usercreds']}"  # Replace with the path to your downloaded client credentials
 TOKEN_FILE = "token.json"  # This will be created automatically
 
 # Scopes you want to enable
@@ -30,7 +30,7 @@ def get_token():
     # If there are no valid credentials, prompt the user to log in
     if not creds or not creds.valid:
         flow = InstalledAppFlow.from_client_secrets_file(CREDENTIALS_FILE, SCOPES)
-        creds = flow.run_local_server(port=0)
+        creds = flow.run_local_server(port=0, access_type='offline', prompt='consent')
 
         # Save the token for future use
         with open(TOKEN_FILE, "w") as token:
