@@ -1,8 +1,10 @@
 # auto-lab-reminders
 
-This Python application allows users to set schedules in Google Sheets and send Google Calendar invites (emails) and MS Teams reminders based on the schedule. Accessing calendar data is done through Google API. 
+This Python application allows users to set schedules in Google Sheets and send Google Calendar invites (emails) and MS Teams reminders based on the schedule. Accessing calendar data is done through Google API. Please read https://developers.google.com/identity/protocols/oauth2 to understand how access tokens work to use Google API. 
 
-## Requirements  
+## Requirements
+- A gmail account (to use gmail, google sheets, google calendar)
+  
 - **Python Version**: Python >= 3.8  
   - *Recommendation*: If you don't already have a valid version of Python, consider installing the latest version.  
 
@@ -16,9 +18,9 @@ pip install argparse pandas google-auth google-auth-oauthlib google-auth-httplib
 
 The application consists of the following:  
 
-### Google Sheet  
+### Google Sheets 
 
-The main Google Sheet contains the following sheets:  
+The main Google Sheets contains the following sheets:  
 
 1. **Rotation**  
    Specifies the rotation logic for scheduling events or tasks.  
