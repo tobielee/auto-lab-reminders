@@ -14,8 +14,6 @@ TOKEN_FILE = "token.json"  # This will be created automatically
 
 # Scopes you want to enable
 SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive",
     "https://www.googleapis.com/auth/calendar",
     "https://www.googleapis.com/auth/gmail.send"
 ]
