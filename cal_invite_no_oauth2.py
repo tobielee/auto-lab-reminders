@@ -34,7 +34,6 @@ class MeetingConfig:
     holiday_vocab: List[str]
     googlesheet: str
     autocreds_path: str
-    auto_emailer: str
     contact_email: str
     smtp_server: str
     smtp_port: int
@@ -72,7 +71,6 @@ def load_config(filepath: str = 'cal_config.cfg') -> MeetingConfig:
         zoom=settings.get('zoom'),
         holiday_vocab=settings.get('holiday_vocab', '').split(", "),
         autocreds_path=settings.get('autocreds'), 
-        auto_emailer=settings.get('autoemailer'), 
         contact_email=settings.get('email')       
     )
 
@@ -118,13 +116,16 @@ def get_next_event(spreadsheet, exact_date: Optional[date] = None) -> Optional[L
 
 
 def send_gmail_smtp(
-    sender_email: str,
     recipients: List[str],
     subject: str,
     body: str,
     smtp_server: str = "smtp.gmail.com",
     smtp_port: int = 587
 ) -> bool:
+    sender_email = os.getenv("EMAIL_USER")
+    if not sender_email:
+        logging.error("Missing EMAIL_USER environment variable.")
+        return False
     password = os.getenv("EMAIL_PASSWORD")
     if not password:
         logging.error("Missing EMAIL_PASSWORD environment variable.")
@@ -149,7 +150,6 @@ def send_gmail_smtp(
 
 
 def send_calendar_invite_smtp(
-    sender_email: str,
     recipients: List[str],
     subject: str,
     event_data: Dict[str, Any],
@@ -160,6 +160,10 @@ def send_calendar_invite_smtp(
     """
     Sends an RFC-compliant calendar invite via SMTP using an App Password.
     """
+    sender_email = os.getenv("EMAIL_USER")
+    if not sender_email:
+        logging.error("Missing EMAIL_USER environment variable.")
+        return False
     password = os.getenv("EMAIL_PASSWORD")
     if not password:
         logging.error("Missing EMAIL_PASSWORD environment variable.")
@@ -308,7 +312,6 @@ XZLab Bot
 """
     # The sending function should get the password from env variables itself
     success = send_gmail_smtp(
-        sender_email=config.auto_emailer,
         recipients=attendees,
         subject=subject,
         body=body
@@ -350,7 +353,6 @@ XZLab Bot
     }
 
     success = send_calendar_invite_smtp(
-        sender_email=config.auto_emailer,
         event_data=event_data,
         subject = f"[XZ Lab Meeting]: {event_data['presenter']} | {event_data['type']}",
         settings=settings_dict,
