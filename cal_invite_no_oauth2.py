@@ -8,6 +8,10 @@ from google.oauth2.service_account import Credentials
 from typing import Optional
 
 import os
+from dotenv import load_dotenv
+
+load_dotenv()  # this loads from .env by default
+
 import smtplib
 import logging
 from uuid import uuid4
@@ -121,9 +125,9 @@ def send_gmail_smtp(
     smtp_server: str = "smtp.gmail.com",
     smtp_port: int = 587
 ) -> bool:
-    password = os.getenv("SENDER_APP_PASSWORD")
+    password = os.getenv("EMAIL_PASSWORD")
     if not password:
-        logging.error("Missing SENDER_APP_PASSWORD environment variable.")
+        logging.error("Missing EMAIL_PASSWORD environment variable.")
         return False
 
     try:
@@ -156,9 +160,9 @@ def send_calendar_invite_smtp(
     """
     Sends an RFC-compliant calendar invite via SMTP using an App Password.
     """
-    password = os.getenv("SENDER_APP_PASSWORD")
+    password = os.getenv("EMAIL_PASSWORD")
     if not password:
-        logging.error("Missing SENDER_APP_PASSWORD environment variable.")
+        logging.error("Missing EMAIL_PASSWORD environment variable.")
         return False
 
     try:
@@ -243,7 +247,7 @@ def send_calendar_invite_smtp(
         logging.info("Calendar invite sent to %d attendees.", len(recipients))
         return True
     except smtplib.SMTPAuthenticationError:
-        logging.error("SMTP auth failed. Check sender email and SENDER_APP_PASSWORD.")
+        logging.error("SMTP auth failed. Check sender email and EMAIL_PASSWORD.")
         return False
     except Exception as e:
         logging.error(f"SMTP error sending calendar invite: {e}")
