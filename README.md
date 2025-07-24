@@ -11,7 +11,7 @@ This Python application allows users to set schedules in Google Sheets and send 
 ## Python Dependencies  
 To install the required Python libraries, use the following command:  
 ```bash
-pip install argparse pandas google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client gspread pymsteams
+pip install argparse pandas google-auth google-auth-oauthlib google-auth-httplib2 google-api-python-client gspread pymsteams icalendar
 ```
 
 ## Components  
