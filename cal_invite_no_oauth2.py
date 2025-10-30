@@ -335,7 +335,7 @@ Hi Lab,
 
 {event.presenter} will be presenting {'data' if event.event_type== 'Data' else 'journal club articles'} at our next lab meeting.
 
-Meeting will be held in {config.room} Breast center conference room and virtually at {config.zoom}.
+Meeting will be held in {config.room} and virtually at {config.zoom}.
 
 If you have any questions regarding scheduling, let {config.contact_email} know.
 

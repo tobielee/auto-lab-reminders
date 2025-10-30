@@ -72,7 +72,7 @@ Hi Lab,
 
 {event_data['presenter']} will be presenting {'data' if event_data['type'] == 'Data' else 'journal club articles'} at our next lab meeting.
 
-Meeting will be held in {labmeeting_settings['room']} Breast center conference room and virtually at {labmeeting_settings['zoom']}.
+Meeting will be held in {labmeeting_settings['room']} and virtually at {labmeeting_settings['zoom']}.
 
 If you have any questions regarding scheduling, let {labmeeting_settings['email']} know.
 
