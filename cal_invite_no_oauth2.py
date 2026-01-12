@@ -8,9 +8,19 @@ from google.oauth2.service_account import Credentials
 from typing import Optional
 
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()  # this loads from .env by default
+try:
+    REPO_ROOT = Path(__file__).parent
+except NameError:
+    REPO_ROOT = Path.cwd()
+
+ENV_PATH = REPO_ROOT / ".env"
+if load_dotenv(dotenv_path=ENV_PATH):
+    print(f"Loaded .env from {ENV_PATH}")
+else:
+    print(f"Failed to load .env from {ENV_PATH}")
 
 import smtplib
 import logging
@@ -22,6 +32,8 @@ from zoneinfo import ZoneInfo  # Python 3.9+
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from icalendar import Calendar, Event, vCalAddress, vText
+from email.utils import formatdate, make_msgid
+import time
 
 @dataclass
 class MeetingConfig:
@@ -136,10 +148,17 @@ def send_gmail_smtp(
         msg["Subject"] = subject
         msg["From"] = sender_email
         msg["To"] = ", ".join(recipients)
-
+        # additional headers
+        msg["Message-ID"] = make_msgid()
+        msg["Date"] = formatdate(localtime=True)
+        msg["User-Agent"] = "Mozilla Thunderbird"
+        
+        time.sleep(2.5) # avoid sending immediately after SMTP
         with smtplib.SMTP(smtp_server, smtp_port) as server:
             server.starttls()
+            time.sleep(0.5)   # small delay helps with some strict servers
             server.login(sender_email, password)
+            time.sleep(0.5)   # small delay helps with some strict servers
             server.sendmail(sender_email, recipients, msg.as_string())
 
         logging.info("Email sent successfully via SMTP.")
@@ -213,40 +232,34 @@ def send_calendar_invite_smtp(
 
     cal.add_component(event)
 
-    # # Build email with calendar attachment
-    # msg = MIMEMultipart('alternative')
-    # msg['Subject'] = subject
-    # msg['From'] = f"XZLab Bot <{sender_email}>"
-    # msg['To'] = ", ".join(recipients)
-
-    # msg.attach(MIMEText(event_data['description'], 'plain'))
-
-    # cal_part = MIMEText(cal.to_ical().decode(), 'calendar', _charset='utf-8')
-    # cal_part.set_param('method', 'REQUEST')
-    # cal_part.add_header('Content-Disposition', 'attachment', filename='invite.ics')
-    # msg.attach(cal_part)
-
     # Build email with calendar attachment
     msg = MIMEMultipart('mixed')
     msg['Subject'] = subject
     msg['From'] = f"XZLab Bot <{sender_email}>"
     msg['To'] = ", ".join(recipients)
-
+    msg['Message-ID'] = make_msgid()
+    msg['Date'] = formatdate(localtime=True)
+    msg['User-Agent'] = "Microsoft Outlook 16.0"
     # Add this header so Outlook recognizes the email as a calendar invite
     msg.add_header('Content-Class', 'urn:content-classes:calendarmessage')
 
     # Plain text body
     msg.attach(MIMEText(event_data['description'], 'plain'))
 
-    # Calendar part — note method param and content-disposition
-    cal_part = MIMEText(cal.to_ical().decode(), 'calendar;method=REQUEST', _charset='utf-8')
-    cal_part.add_header('Content-Disposition', 'inline; filename="invite.ics"')
-    msg.attach(cal_part)
+    # Calendar part attachment 
+    ical_data = cal.to_ical().decode('utf-8')
+    cal_part = MIMEText(ical_data, _subtype="calendar", _charset="utf-8")
+    cal_part.replace_header("Content-Type", 'text/calendar; charset="utf-8"; method=REQUEST')
+    cal_part.add_header("Content-Disposition", 'inline; filename="invite.ics"')
 
+    msg.attach(cal_part)
+    time.sleep(2) 
     try:
         with smtplib.SMTP(smtp_server, smtp_port) as server:
             server.starttls()
+            time.sleep(0.5)
             server.login(sender_email, password)
+            time.sleep(0.5)
             server.sendmail(sender_email, recipients, msg.as_string())
         logging.info("Calendar invite sent to %d attendees.", len(recipients))
         return True
