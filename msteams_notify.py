@@ -71,14 +71,14 @@ def send_teams(labmeeting_settings, msteam_settings, cal):
     # Simplified Payload for easy Power Automate parsing
     payload = {
         "title": "Upcoming Lab Meeting Schedule",
-        "message_list": "\n\n".join(lines),
+        "message_list": "<br>".join(lines),
         "sender": webhook_name,
         "date_sent": datetime.today().strftime('%Y-%m-%d')
     }
 
     try:
         response = requests.post(webhook_url, json=payload, timeout=10)
-        if response.status_code != 200:
+        if response.status_code not in (200, 202):
             print(f"MS Workflow failed: {response.status_code} - {response.text}")
         else:
             print("Data sent successfully to Microsoft Workflow \n")

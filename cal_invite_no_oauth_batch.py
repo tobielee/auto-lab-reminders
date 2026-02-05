@@ -62,7 +62,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 
 def load_config(filepath: str = 'cal_config.cfg') -> MeetingConfig:
     """Loads settings from a config file and returns a MeetingConfig object."""
-    parser = configparser.ConfigParser()
+    parser = configparser.ConfigParser(interpolation=None)
     parser.read(filepath)
 
     if 'labmeeting' not in parser:
